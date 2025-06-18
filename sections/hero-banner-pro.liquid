@@ -26,7 +26,7 @@
     {
       "type": "video",
       "id": "video_upload",
-      "label": "Upload Video (MP4)"
+      "label": "Upload Video"
     },
     {
       "type": "text",
@@ -87,7 +87,7 @@
     {
       "type": "checkbox",
       "id": "parallax",
-      "label": "Enable Parallax Effect",
+      "label": "Enable Parallax Effect (Image Only)",
       "default": true
     },
     {
@@ -99,7 +99,7 @@
     {
       "type": "checkbox",
       "id": "full_width",
-      "label": "Full Page Width Mode",
+      "label": "Full Page Height",
       "default": false
     }
   ],
@@ -116,109 +116,75 @@
     position: relative;
     width: 100%;
     overflow: hidden;
-    height: 80vh;
+    {% if section.settings.full_width %}
+      height: 100vh;
+    {% else %}
+      height: 80vh;
+    {% endif %}
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
     text-align: center;
+    color: white;
     z-index: 1;
-    background-color: #000;
+    {% if section.settings.parallax and section.settings.media_type == 'image' %}
+      background-attachment: fixed;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    {% endif %}
   }
 
   .hero-banner video,
   .hero-banner picture img {
+    position: absolute;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    position: absolute;
-    z-index: 1;
     top: 0;
     left: 0;
-  }
-
-  .hero-banner.carousel .hero-slide {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-width: 100%;
+    z-index: 1;
   }
 
   .hero-banner .hero-overlay {
-    background-color: {{ section.settings.overlay_color }};
-    opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
     position: absolute;
     width: 100%;
     height: 100%;
     top: 0;
     left: 0;
+    background-color: {{ section.settings.overlay_color }};
+    opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
     z-index: 2;
   }
 
   .hero-content {
     position: relative;
     z-index: 3;
-    max-width: 800px;
     padding: 20px;
-  }
-
-  .hero-content h1, .hero-content p, .hero-content a {
-    transition: all 0.6s ease-in-out;
+    max-width: 800px;
     opacity: 0;
     transform: translateY(20px);
+    transition: all 0.8s ease-out;
   }
 
-  .hero-content.fade h1,
-  .hero-content.fade p,
-  .hero-content.fade a {
-    animation: fadeIn 1s forwards;
+  .hero-content.reveal {
+    opacity: 1;
+    transform: translateY(0);
   }
 
-  .hero-content.slide h1,
-  .hero-content.slide p,
-  .hero-content.slide a {
-    animation: slideUp 1s forwards;
-  }
+  .hero-content.fade { animation: fadeIn 1s forwards; }
+  .hero-content.slide { animation: slideUp 1s forwards; }
+  .hero-content.zoom { animation: zoomIn 1s forwards; }
 
-  .hero-content.zoom h1,
-  .hero-content.zoom p,
-  .hero-content.zoom a {
-    animation: zoomIn 1s forwards;
-  }
-
-  @keyframes fadeIn {
-    to { opacity: 1; transform: none; }
-  }
-
-  @keyframes slideUp {
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes zoomIn {
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  {% if section.settings.parallax %}
-  .hero-banner {
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-  }
-  {% endif %}
-
-  {% if section.settings.full_width %}
-  .hero-banner {
-    height: 100vh;
-  }
-  {% endif %}
+  @keyframes fadeIn { to { opacity: 1; transform: none; } }
+  @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+  @keyframes zoomIn { to { opacity: 1; transform: scale(1); } }
 {% endstyle %}
 
 <section class="hero-banner {% if section.settings.media_type == 'carousel' %}carousel{% endif %}">
   {% if section.settings.media_type == 'video' and section.settings.video_upload %}
-    <video autoplay muted loop playsinline>
-      <source src="{{ section.settings.video_upload | file_url }}" type="video/mp4">
-    </video>
+    {{ section.settings.video_upload | video_tag: autoplay: true, muted: true, loop: true, playsinline: true }}
+
   {% elsif section.settings.media_type == 'carousel' %}
     <div class="hero-slide">
       <picture>
@@ -226,8 +192,9 @@
         <img src="{{ section.settings.image_desktop | image_url: width: 1500 }}" alt="Hero Slide">
       </picture>
     </div>
-    <!-- Add more slides if needed -->
-  {% else %}
+    <!-- Extend more slides manually here -->
+
+  {% elsif section.settings.media_type == 'image' %}
     <picture>
       <source media="(max-width: 749px)" srcset="{{ section.settings.image_mobile | image_url: width: 750 }}">
       <img src="{{ section.settings.image_desktop | image_url: width: 1500 }}" alt="Hero Background">
@@ -236,7 +203,7 @@
 
   <div class="hero-overlay"></div>
 
-  <div class="hero-content {{ section.settings.animation_type }}">
+  <div class="hero-content {{ section.settings.animation_type }} {% if section.settings.scroll_reveal %}reveal{% endif %}">
     {% if section.settings.heading != blank %}
       <h1>{{ section.settings.heading }}</h1>
     {% endif %}
@@ -254,3 +221,24 @@
     {% endif %}
   </div>
 </section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const hero = document.querySelector('.hero-content');
+    if (!hero) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(hero);
+  });
+</script>
