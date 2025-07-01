@@ -9,23 +9,58 @@
  */
 {
   "sections": {
-    "hero_banner_pro_cyAwWw": {
-      "type": "enhanced-video-banner",
-      "name": "Hero Banner Pro",
+    "tee_hero_carousel_3zNWBK": {
+      "type": "tee-hero-carousel",
+      "blocks": {
+        "tee_slide_UYRRWJ": {
+          "type": "tee_slide",
+          "settings": {
+            "tee_image": "shopify://shop_images/10764626723009-1751368663586.png",
+            "product_link": "limited-edition"
+          }
+        },
+        "tee_slide_hFWJLF": {
+          "type": "tee_slide",
+          "settings": {
+            "tee_image": "shopify://shop_images/10752291504321-1749835155272.png",
+            "product_link": "oversized-t-shirt"
+          }
+        },
+        "tee_slide_BNhyih": {
+          "type": "tee_slide",
+          "settings": {
+            "tee_image": "shopify://shop_images/10752291012801-1749835104782.png",
+            "product_link": "t-shirt"
+          }
+        },
+        "tee_slide_HxfXfH": {
+          "type": "tee_slide",
+          "settings": {
+            "tee_image": "shopify://shop_images/10752291012801-1749835102436.png",
+            "product_link": "t-shirt"
+          }
+        },
+        "tee_slide_pcJErK": {
+          "type": "tee_slide",
+          "settings": {
+            "tee_image": "shopify://shop_images/10764626591937-1751368615105.png",
+            "product_link": "go-with-the-flow"
+          }
+        }
+      },
+      "block_order": [
+        "tee_slide_UYRRWJ",
+        "tee_slide_hFWJLF",
+        "tee_slide_BNhyih",
+        "tee_slide_HxfXfH",
+        "tee_slide_pcJErK"
+      ],
+      "name": "Tee Hero Carousel",
       "settings": {
         "media_type": "video",
-        "video_upload": "shopify://files/videos/7621848-uhd_4096_2160_25fps.mp4",
-        "heading": "Unleash Your Style",
-        "subheading": "New season. New arrivals. Same bold energy.",
-        "cta_text": "Shop Now",
-        "cta_link": "",
-        "show_cta": true,
-        "overlay_color": "#000000",
-        "overlay_opacity": 40,
-        "animation_type": "fade",
-        "parallax": true,
-        "scroll_reveal": true,
-        "full_width": false
+        "enable_autoplay": true,
+        "auto_slide_delay": 4,
+        "background_video": "shopify://files/videos/smoke (1).mp4"
       }
     },
     "image_banner": {
@@ -241,7 +276,7 @@
     }
   },
   "order": [
-    "hero_banner_pro_cyAwWw",
+    "tee_hero_carousel_3zNWBK",
     "image_banner",
     "rich_text",
     "featured_collection",
