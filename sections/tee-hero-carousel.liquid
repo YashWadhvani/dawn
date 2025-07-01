@@ -1,0 +1,316 @@
+<!--
+  Shopify Section: Tee Hero Carousel
+
+  This section implements a hero carousel with a dynamic background
+  (video or image) and slides featuring tee mockups linked to products.
+  It uses Swiper.js for the carousel functionality.
+-->
+
+{% schema %}
+{
+  "name": "Tee Hero Carousel",
+  "settings": [
+    {
+      "type": "select",
+      "id": "media_type",
+      "label": "Background Type",
+      "options": [
+        { "value": "video", "label": "Video" },
+        { "value": "image", "label": "Image" }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Enable Autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "auto_slide_delay",
+      "label": "Auto Slide Delay (seconds)",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image"
+    },
+    {
+      "type": "video",
+      "id": "background_video",
+      "label": "Background Video"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tee_slide",
+      "name": "Tee Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "tee_image",
+          "label": "Tee Mockup Image"
+        },
+        {
+          "type": "product",
+          "id": "product_link",
+          "label": "Linked Product"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "presets": [
+    {
+      "name": "Tee Hero Carousel",
+      "category": "Hero"
+    }
+  ]
+}
+{% endschema %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<section class="tee-hero-carousel">
+  <div
+    class="background-layer"
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden;"
+  >
+    {% comment %} Check if media_type is set to 'video' and a video is actually selected {% endcomment %}
+    {% if section.settings.media_type == 'video'
+      and section.settings.background_video != blank
+      and section.settings.background_video.media_type == 'video'
+    %}
+      {% assign background_video_source = section.settings.background_video %}
+      <video
+        autoplay
+        muted
+        loop
+        playsinline
+        {% if background_video_source.preview_image %}
+          poster="{{ background_video_source.preview_image | img_url: '1920x' }}"
+        {% else %}
+          {# Fallback poster image if no preview image is available for the video #}
+          poster="https://placehold.co/1920x1080/444444/FFFFFF?text=Loading+Video"
+        {% endif %}
+        class="w-full h-full object-cover"
+        {#
+        Tailwind
+        classes
+        for
+        responsive
+        background
+        video
+        #}
+        style="display: block; width: 100%; height: 100%; object-fit: cover;"
+      >
+        {% comment %} Iterate through all available video sources for browser compatibility {% endcomment %}
+        {% for source in background_video_source.sources %}
+          <source src="{{ source.url }}" type="{{ source.mime_type }}">
+        {% endfor %}
+        Your browser does not support the video tag.
+      </video>
+      {% comment %} Else if media_type is set to 'image' and an image is actually selected {% endcomment %}
+    {% elsif section.settings.media_type == 'image' and section.settings.background_image != blank %}
+      <img
+        src="{{ section.settings.background_image | image_url: width: 1920 }}"
+        alt="{{ section.settings.background_image.alt | escape }}"
+        {#
+        Ensure
+        alt
+        text
+        is
+        properly
+        escaped
+        #}
+        width="{{ section.settings.background_image.width }}"
+        {#
+        Use
+        actual
+        image
+        width
+        for
+        CLS
+        #}
+        height="{{ section.settings.background_image.height }}"
+        {#
+        Use
+        actual
+        image
+        height
+        for
+        CLS
+        #}
+        class="w-full h-full object-cover"
+        {#
+        Tailwind
+        classes
+        for
+        responsive
+        background
+        image
+        #}
+        style="display: block; max-width: 100%; height: 100%; object-fit: cover;"
+      >
+      {% comment %} Optional: Fallback for when no media is selected or valid {% endcomment %}
+    {% else %}
+      {# You might add a default background color or a placeholder if no media is selected #}
+      <div style="width: 100%; height: 100%; background-color: #f0f0f0;"></div>
+    {% endif %}
+  </div>
+
+  <div class="swiper tee-swiper">
+    <div class="swiper-wrapper">
+      {% for block in section.blocks %}
+        <div class="swiper-slide">
+          <div class="tee-slide-content">
+            {% if block.settings.product_link %}
+              <a href="{{ block.settings.product_link.url }}">
+                <img src="{{ block.settings.tee_image | image_url: width: 800 }}" alt="Tee Mockup">
+              </a>
+            {% else %}
+              <img src="{{ block.settings.tee_image | image_url: width: 800 }}" alt="Tee Mockup">
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-button-next"></div>
+  </div>
+</section>
+
+<style>
+  .tee-hero-carousel {
+    position: relative;
+    overflow: hidden;
+    height: calc(100vh - 120px);
+  }
+  .background-layer video,
+  .background-layer img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    object-fit: cover;
+    z-index: 0;
+  }
+  .tee-swiper {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .swiper-slide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    transform: scale(0.85);
+    transition: all 0.4s ease;
+    text-align: center;
+  }
+  .swiper-slide.swiper-slide-active {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  .tee-slide-content img {
+    height: 100%;
+    max-height: 80vh;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    margin: 0 auto;
+    filter: drop-shadow(0 4px 20px rgba(255, 255, 255, 0.2));
+  }
+  .swiper-button-prev,
+  .swiper-button-next {
+    display: block !important; /* Ensure buttons are always visible */
+    color: white; /* Keep white color for the arrow icon */
+    z-index: 2;
+    /* --- NEW STYLES FOR VISIBILITY --- */
+    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent black background */
+    padding: 10px 15px; /* Add some padding */
+    border-radius: 50%; /* Make them circular */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+  }
+
+  .swiper-button-prev:hover,
+  .swiper-button-next:hover {
+    background-color: rgba(0, 0, 0, 0.6); /* Darker on hover */
+  }
+
+  /* Ensure the SVG content of the arrows is visible */
+  .swiper-button-prev::after,
+  .swiper-button-next::after {
+    font-size: 20px; /* Adjust size if needed, default is usually fine */
+  }
+
+  .swiper-pagination {
+    bottom: 10px;
+    text-align: center;
+    z-index: 5;
+  }
+  .swiper-pagination-bullet {
+    background: white;
+    opacity: 0.5;
+  }
+  .swiper-pagination-bullet-active {
+    opacity: 1;
+    background: white;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const delay = {{ section.settings.auto_slide_delay | times: 1000 }};
+    const autoplayEnabled = {{ section.settings.enable_autoplay | json }};
+
+    let swiperAutoplayConfig = false;
+    if (autoplayEnabled) {
+      swiperAutoplayConfig = {
+        delay: delay,
+        disableOnInteraction: false
+      };
+    }
+
+    new Swiper('.tee-swiper', {
+      loop: true,
+      centeredSlides: true,
+      slidesPerView: 3,
+      spaceBetween: 30,
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev'
+      },
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true
+      },
+      autoplay: swiperAutoplayConfig, // Use the pre-determined config
+      breakpoints: {
+        0: {
+          slidesPerView: 1,
+          centeredSlides: true
+        },
+        768: {
+          slidesPerView: 2,
+          centeredSlides: true
+        },
+        1024: {
+          slidesPerView: 3
+        }
+      }
+    });
+  });
+</script>

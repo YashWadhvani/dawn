@@ -10,7 +10,7 @@
 {
   "sections": {
     "hero_banner_pro_cyAwWw": {
-      "type": "hero-banner-pro",
+      "type": "enhanced-video-banner",
       "name": "Hero Banner Pro",
       "settings": {
         "media_type": "video",
